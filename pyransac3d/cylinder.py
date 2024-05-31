@@ -14,7 +14,7 @@ class Cylinder:
 
     Implementation for cylinder RANSAC.
 
-    This class finds a infinite height cilinder and returns the cylinder axis, center and radius.
+    This class finds a infinite height cylinder and returns the cylinder axis, center and radius.
 
     ---
     """
@@ -46,9 +46,35 @@ class Cylinder:
 
         for it in range(maxIteration):
 
-            # Samples 3 random points
-            id_samples = random.sample(range(0, n_points), 3)
-            pt_samples = pts[id_samples]
+            while True:
+                # Sample the first random point
+                first_id_sample = random.sample(range(0, n_points), 1)[0]
+                first_pt_sample = pts[first_id_sample]
+                # print(first_pt_sample)
+
+                # Establish z-range
+                z_center = first_pt_sample[2]
+                z_range = 0.3  # Change this value to specify the z-range in which to choose the remaining points
+                z_min = z_center - z_range
+                z_max = z_center + z_range
+
+                # Reduce point Cloud to z-Range
+                remaining_pts = pts[np.arange(n_points) != first_id_sample]
+                filtered_pts = remaining_pts[(remaining_pts[:, 2] >= z_min) & (remaining_pts[:, 2] <= z_max)]
+
+                # print(filtered_pts)
+
+                # Check if we have enough points to sample from
+                if len(filtered_pts) >= 2:
+                    break
+                else:
+                    print("Not enough points within the specified z-axis range. Choosing a new first point.")
+
+            # Sample the remaining 2 points from the reduced cloud
+            rem_id_samples = random.sample(range(len(filtered_pts)), 2)
+            rem_pt_samples = filtered_pts[rem_id_samples]
+
+            pt_samples = np.vstack((first_pt_sample, rem_pt_samples))
 
             # We have to find the plane equation described by those 3 points
             # We find first 2 vectors that are part of this plane
