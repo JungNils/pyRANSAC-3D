@@ -25,13 +25,14 @@ class Cylinder:
         self.axis = []
         self.radius = 0
 
-    def fit(self, pts, thresh=0.2, maxIteration=10000):
+    def fit(self, pts, thresh=0.2, maxIteration=10000, z_range=1):
         """
         Find the parameters (axis and radius) defining a cylinder.
 
         :param pts: 3D point cloud as a numpy array (N,3).
         :param thresh: Threshold distance from the cylinder hull which is considered inlier.
         :param maxIteration: Number of maximum iteration which RANSAC will loop over.
+        :param z_range: Maximum distance between the three sampled points.
 
         :returns:
         - `center`: Center of the cylinder np.array(1,3) which the cylinder axis is passing through.
@@ -54,9 +55,8 @@ class Cylinder:
 
                 # Establish z-range
                 z_center = first_pt_sample[2]
-                z_range = 0.3  # Change this value to specify the z-range in which to choose the remaining points
-                z_min = z_center - z_range
-                z_max = z_center + z_range
+                z_min = z_center - (z_range/2)
+                z_max = z_center + (z_range/2)
 
                 # Reduce point Cloud to z-Range
                 remaining_pts = pts[np.arange(n_points) != first_id_sample]
